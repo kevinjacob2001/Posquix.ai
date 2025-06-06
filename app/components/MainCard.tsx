@@ -20,6 +20,7 @@ export default function MainCard({
 }) {
   const { theme } = useTheme();
   const themeColors = theme === 'dark' ? colors.dark : colors.light;
+  const isDetecting = postureStatus === "Detecting...";
   
   return (
     <div className="backdrop-blur-2xl rounded-[28px] md:rounded-[28px] rounded-[16px] shadow-2xl flex flex-col items-center w-full max-w-lg relative transition-all duration-500 mx-4 md:mx-0 min-h-[560px] md:h-[660px] p-5 md:p-7"
@@ -49,11 +50,11 @@ export default function MainCard({
             </h6>
             <div className="w-12 md:w-16 h-0.5 md:h-1 mx-auto rounded-full transition-all duration-500"
               style={{
-                background: themeColors.accent.soft
+                background: themeColors.accent.primary
               }}
             />
           </div>
-          <p className="text-xs md:text-sm max-w-[280px] md:max-w-md font-medium leading-relaxed transition-all duration-500 text-shimmer px-2 md:px-0"
+          <p className="text-xs md:text-sm max-w-[280px] md:max-w-md font-medium leading-relaxed transition-all duration-500 px-2 md:px-0"
             style={{ 
               color: themeColors.text.secondary,
               textShadow: themeColors.shadow.text
@@ -73,13 +74,38 @@ export default function MainCard({
           <Webcam
             ref={webcamRef}
             className="absolute top-0 left-0 w-full h-full object-cover z-0"
-            style={{ borderRadius: "inherit" }}
+            style={{ 
+              borderRadius: "inherit",
+              opacity: isDetecting ? 0.7 : 1,
+              transition: 'opacity 0.3s ease'
+            }}
           />
           <canvas
             ref={canvasRef}
             className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none"
             style={{ borderRadius: "inherit" }}
           />
+          {/* Loader */}
+          {isDetecting && (
+            <div className="absolute inset-0 flex items-center justify-center z-20">
+              <div className="relative w-12 h-12">
+                <div className="absolute w-full h-full border-4 border-t-transparent border-l-transparent rounded-full animate-spin"
+                  style={{ 
+                    borderColor: `${themeColors.accent.primary}40`,
+                    borderTopColor: 'transparent',
+                    borderLeftColor: 'transparent'
+                  }} />
+                <div className="absolute w-full h-full border-4 border-t-transparent border-l-transparent rounded-full animate-spin"
+                  style={{ 
+                    borderColor: themeColors.accent.primary,
+                    borderTopColor: 'transparent',
+                    borderLeftColor: 'transparent',
+                    animationDuration: '1s',
+                    animationDirection: 'reverse'
+                  }} />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Footer */}

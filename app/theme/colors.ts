@@ -42,7 +42,7 @@ export const colors = {
     cardBorder: 'rgba(226, 232, 240, 0.7)',
     text: {
       primary: 'rgb(15, 23, 42)',
-      secondary: 'rgb(15, 23, 42)',
+      secondary: 'rgb(51, 65, 85)',
       tertiary: 'rgb(100, 116, 139)'
     },
     accent: {
@@ -53,13 +53,13 @@ export const colors = {
       success: {
         bg: 'rgba(22, 163, 74, 0.1)',
         border: 'rgba(22, 163, 74, 0.2)',
-        text: 'rgb(20, 83, 45)',
+        text: 'rgb(21, 128, 61)',
         icon: 'rgb(22, 163, 74)'
       },
       warning: {
         bg: 'rgba(234, 179, 8, 0.08)',
         border: 'rgba(234, 179, 8, 0.15)',
-        text: 'rgb(113, 63, 18)',
+        text: 'rgb(161, 98, 7)',
         icon: 'rgb(234, 179, 8)'
       },
       error: {

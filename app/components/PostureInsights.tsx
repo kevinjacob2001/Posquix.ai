@@ -22,6 +22,7 @@ export default function PostureInsights({ insights }: { insights: {msg: string, 
           background: statusColors.bg,
           border: `1px solid ${statusColors.border}`,
           backdropFilter: 'blur(8px)',
+          boxShadow: theme === 'light' ? '0 2px 10px rgba(0, 0, 0, 0.05)' : 'none'
         }}
       >
         {latestInsight.good ? (

@@ -14,7 +14,8 @@ export default function StatusBar({ isGoodPosture, postureStatus }: { isGoodPost
       style={{
         background: statusColors.bg,
         border: `1px solid ${statusColors.border}`,
-        backdropFilter: 'blur(8px)'
+        backdropFilter: 'blur(8px)',
+        boxShadow: theme === 'light' ? '0 2px 10px rgba(0, 0, 0, 0.05)' : 'none'
       }}
     >
       {isGoodPosture ? (
