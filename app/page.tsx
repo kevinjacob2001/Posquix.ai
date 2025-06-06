@@ -1,103 +1,134 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import React, { useRef, useEffect, useState } from "react";
+import "./App.css";
+import * as tf from "@tensorflow/tfjs";
+import * as posenet from "@tensorflow-models/posenet";
+import Webcam from "react-webcam";
+import { drawKeypoints, drawSkeleton } from "./utilities";
+import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
+import MainCard from './components/MainCard';
+import { getAngle, isPostureCorrect, getPostureInsights } from './utils/posture';
+import { useTheme } from './layout';
+
+function Home() {
+  const webcamRef = useRef<Webcam>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [postureStatus, setPostureStatus] = useState("Detecting...");
+  const [isGoodPosture, setIsGoodPosture] = useState(true);
+  const [debugInfo, setDebugInfo] = useState<{leftXDiff: number|null, leftYDiff: number|null, rightXDiff: number|null, rightYDiff: number|null, keypoints: posenet.Keypoint[]}>({leftXDiff: null, leftYDiff: null, rightXDiff: null, rightYDiff: null, keypoints: []});
+
+  const runPosenet = async () => {
+    const net = await posenet.load({
+      architecture: "MobileNetV1",
+      outputStride: 16,
+      inputResolution: { width: 640, height: 480 },
+      multiplier: 0.75,
+    });
+
+    setInterval(() => {
+      detect(net);
+    }, 200);
+  };
+
+  const detect = async (net: posenet.PoseNet) => {
+    if (
+      webcamRef.current &&
+      webcamRef.current.video &&
+      webcamRef.current.video.readyState === 4
+    ) {
+      const video = webcamRef.current.video as HTMLVideoElement;
+      const videoWidth = video.videoWidth;
+      const videoHeight = video.videoHeight;
+
+      video.width = videoWidth;
+      video.height = videoHeight;
+
+      const pose = await net.estimateSinglePose(video, {
+        flipHorizontal: false,
+      });
+
+      // Posture logic
+      const good = isPostureCorrect(pose.keypoints);
+      setIsGoodPosture(good);
+      setPostureStatus(good ? "Good Posture" : "Bad Posture");
+
+      const leftEar = pose.keypoints.find((k: posenet.Keypoint) => k.part === "leftEar");
+      const leftShoulder = pose.keypoints.find((k: posenet.Keypoint) => k.part === "leftShoulder");
+      const rightEar = pose.keypoints.find((k: posenet.Keypoint) => k.part === "rightEar");
+      const rightShoulder = pose.keypoints.find((k: posenet.Keypoint) => k.part === "rightShoulder");
+      let leftXDiff = null, leftYDiff = null;
+      let rightXDiff = null, rightYDiff = null;
+      if (leftEar && leftShoulder && leftEar.score > 0.5 && leftShoulder.score > 0.5) {
+        const earPos = leftEar.position as {x: number, y: number};
+        const shPos = leftShoulder.position as {x: number, y: number};
+        leftXDiff = Math.abs(earPos.x - shPos.x);
+        leftYDiff = shPos.y - earPos.y;
+      }
+      if (rightEar && rightShoulder && rightEar.score > 0.5 && rightShoulder.score > 0.5) {
+        const earPos = rightEar.position as {x: number, y: number};
+        const shPos = rightShoulder.position as {x: number, y: number};
+        rightXDiff = Math.abs(earPos.x - shPos.x);
+        rightYDiff = shPos.y - earPos.y;
+      }
+      setDebugInfo({leftXDiff, leftYDiff, rightXDiff, rightYDiff, keypoints: pose.keypoints});
+
+      drawCanvas(pose, video, videoWidth, videoHeight, canvasRef);
+    }
+  };
+
+  const drawCanvas = (
+    pose: posenet.Pose,
+    video: HTMLVideoElement,
+    videoWidth: number,
+    videoHeight: number,
+    canvas: React.MutableRefObject<HTMLCanvasElement | null>
+  ) => {
+    const ctx = canvas.current?.getContext("2d");
+    if (!ctx || !canvas.current) return;
+
+    canvas.current.width = videoWidth;
+    canvas.current.height = videoHeight;
+
+    drawKeypoints(pose.keypoints, 0.6, ctx);
+    drawSkeleton(pose.keypoints, 0.7, ctx);
+  };
+
+  useEffect(() => {
+    runPosenet();
+    // eslint-disable-next-line
+  }, []);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden"
+      style={{
+        background: `linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-middle) 50%, var(--gradient-end) 100%)`
+      }}>
+      {/* Animated background blobs */}
+      <div className="absolute top-0 left-0 w-full h-full -z-10 pointer-events-none">
+        <div className="absolute w-[32rem] h-[32rem] bg-purple-500 opacity-30 rounded-full blur-3xl animate-blob1 left-10 top-10" />
+        <div className="absolute w-[28rem] h-[28rem] bg-blue-400 opacity-20 rounded-full blur-2xl animate-blob2 right-20 top-40" />
+        <div className="absolute w-[24rem] h-[24rem] bg-pink-400 opacity-20 rounded-full blur-2xl animate-blob3 left-1/2 bottom-10" />
+      </div>
+      <MainCard
+        isGoodPosture={isGoodPosture}
+        postureStatus={postureStatus}
+        insights={getPostureInsights(debugInfo)}
+        webcamRef={webcamRef}
+        canvasRef={canvasRef}
+      />
+      {/* Custom Animations */}
+      <style jsx global>{`
+        @keyframes blob1 { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(-30px) scale(1.1);} }
+        @keyframes blob2 { 0%,100%{transform:translateX(0) scale(1);} 50%{transform:translateX(30px) scale(1.1);} }
+        @keyframes blob3 { 0%,100%{transform:translateY(0) scale(1);} 50%{transform:translateY(30px) scale(1.1);} }
+        .animate-blob1 { animation: blob1 12s ease-in-out infinite; }
+        .animate-blob2 { animation: blob2 14s ease-in-out infinite; }
+        .animate-blob3 { animation: blob3 16s ease-in-out infinite; }
+        @keyframes fadeInScale { from { opacity: 0; transform: scale(0.95) translateY(20px);} to { opacity: 1; transform: scale(1) translateY(0);} }
+      `}</style>
     </div>
   );
 }
+
+export default Home;
