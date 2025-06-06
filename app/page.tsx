@@ -9,7 +9,7 @@ import { drawKeypoints, drawSkeleton } from "./utilities";
 import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
 import MainCard from './components/MainCard';
 import { getAngle, isPostureCorrect, getPostureInsights } from './utils/posture';
-import { useTheme } from './layout';
+import { useTheme } from './theme/theme.context';
 
 function Home() {
   const webcamRef = useRef<Webcam>(null);
@@ -25,7 +25,7 @@ function Home() {
       inputResolution: { width: 640, height: 480 },
       multiplier: 0.75,
     });
-
+  
     setInterval(() => {
       detect(net);
     }, 200);
@@ -100,8 +100,8 @@ function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden"
-      style={{
+    <div className="min-h-screen w-full flex items-center justify-center relative overflow-hidden px-5 py-6 md:p-0"
+          style={{
         background: `linear-gradient(135deg, var(--gradient-start) 0%, var(--gradient-middle) 50%, var(--gradient-end) 100%)`
       }}>
       {/* Animated background blobs */}

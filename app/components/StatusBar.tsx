@@ -1,6 +1,6 @@
 import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
 import React from 'react';
-import { useTheme } from '../layout';
+import { useTheme } from '../theme/theme.context';
 import { colors } from '../theme/colors';
 
 export default function StatusBar({ isGoodPosture, postureStatus }: { isGoodPosture: boolean, postureStatus: string }) {

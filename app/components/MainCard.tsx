@@ -2,7 +2,7 @@ import React from 'react';
 import Webcam from 'react-webcam';
 import StatusBar from './StatusBar';
 import PostureInsights from './PostureInsights';
-import { useTheme } from '../layout';
+import { useTheme } from '../theme/theme.context';
 import { colors } from '../theme/colors';
 
 export default function MainCard({
@@ -22,16 +22,16 @@ export default function MainCard({
   const themeColors = theme === 'dark' ? colors.dark : colors.light;
   
   return (
-    <div className="backdrop-blur-2xl rounded-[28px] md:rounded-[28px] rounded-[16px] shadow-2xl flex flex-col items-center w-full max-w-lg relative transition-all duration-500 mx-4 md:mx-0 min-h-[560px] md:h-[660px] p-4 md:p-7"
+    <div className="backdrop-blur-2xl rounded-[28px] md:rounded-[28px] rounded-[16px] shadow-2xl flex flex-col items-center w-full max-w-lg relative transition-all duration-500 mx-4 md:mx-0 min-h-[560px] md:h-[660px] p-5 md:p-7"
       style={{
         background: themeColors.background,
         borderColor: themeColors.cardBorder,
         borderWidth: '1px',
         boxShadow: themeColors.shadow.card
       }}>
-      <div className="flex flex-col items-center w-full h-full gap-4 md:gap-6">
+      <div className="flex flex-col items-center w-full h-full gap-5 md:gap-6">
         {/* Status section */}
-        <div className="w-full space-y-2 md:space-y-3">
+        <div className="w-full space-y-3 md:space-y-3">
           <StatusBar isGoodPosture={isGoodPosture} postureStatus={postureStatus} />
           <PostureInsights insights={insights} />
         </div>
@@ -83,11 +83,20 @@ export default function MainCard({
         </div>
 
         {/* Footer */}
-        <div className="text-xs md:text-sm font-medium transition-all duration-500"
+        <div className="text-xs md:text-sm font-medium transition-all duration-500 flex flex-col items-center gap-2"
           style={{ 
             color: themeColors.text.tertiary
           }}>
-          Created by Kevin Jacob
+          <span>Created by Kevin Jacob</span>
+          <a 
+            href="/privacy" 
+            className="hover:underline transition-all duration-300"
+            style={{ 
+              color: themeColors.text.tertiary,
+              opacity: 0.8
+            }}>
+            Privacy Policy
+          </a>
         </div>
       </div>
     </div>

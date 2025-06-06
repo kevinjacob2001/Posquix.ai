@@ -1,6 +1,6 @@
 import React from 'react';
 import { CheckCircleIcon, ExclamationCircleIcon } from '@heroicons/react/24/solid';
-import { useTheme } from '../layout';
+import { useTheme } from '../theme/theme.context';
 import { colors } from '../theme/colors';
 
 export default function PostureInsights({ insights }: { insights: {msg: string, good: boolean}[] }) {
@@ -35,7 +35,7 @@ export default function PostureInsights({ insights }: { insights: {msg: string, 
           className="text-sm font-medium truncate"
           style={{ 
             color: statusColors.text,
-            maxWidth: 'calc(100% - 28px)' // Account for icon width and gap
+            maxWidth: 'calc(100% - 28px)' 
           }}>
           {latestInsight.msg}
         </span>
